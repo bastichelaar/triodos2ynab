@@ -1,4 +1,4 @@
-# ing2ynab
+# triodos2ynab
 
 Convert Triodos CSV format to YNAB format.
 
