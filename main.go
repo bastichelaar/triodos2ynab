@@ -2,13 +2,21 @@ package main
 
 import (
 	"encoding/csv"
+	"flag"
 	"fmt"
 	"os"
 	"strings"
 )
 
 func main() {
-	csvfile, err := os.Open("ing.csv")
+	var file string
+	var outfile string
+
+	flag.StringVar(&file, "in", "mutations.csv", "File to convert")
+	flag.StringVar(&outfile, "out", "ynab.csv", "Output file")
+	flag.Parse()
+
+	csvfile, err := os.Open(file)
 
 	if err != nil {
 		fmt.Println(err)
@@ -28,7 +36,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	targetcsv, err := os.Create("ynab.csv")
+	targetcsv, err := os.Create(outfile)
 
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -42,23 +50,21 @@ func main() {
 	writer.Write(header)
 
 	for _, row := range rawCSVdata {
-		if row[0] != "Datum" {
-			date := strings.Replace(row[0], "-", "/", -1)
-			payee := row[1]
-			category := ""
-			memo := row[8]
-			inflow := ""
-			outflow := ""
+		date := strings.Replace(row[0], "-", "/", -1)
+		payee := row[4]
+		category := ""
+		memo := row[7]
+		inflow := ""
+		outflow := ""
 
-			amount := strings.Replace(row[6], ",", ".", -1)
-			if row[5] == "Bij" {
-				inflow = amount
-			} else {
-				outflow = amount
-			}
-
-			writer.Write([]string{date, payee, category, memo, outflow, inflow})
+		amount := strings.Replace(row[2], ",", ".", -1)
+		if row[3] == "Credit" {
+			inflow = amount
+		} else {
+			outflow = amount
 		}
+
+		writer.Write([]string{date, payee, category, memo, outflow, inflow})
 		fmt.Printf("Date: %s --- Name: %s\n", row[0], row[1])
 	}
 }
